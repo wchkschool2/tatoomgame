@@ -21,6 +21,9 @@
             display: none; 
             background-color: #2d3748;
             cursor: crosshair;
+            width: 100%;
+            height: 100%;
+            object-fit: contain; 
         }
         .glass-panel {
             background: rgba(255, 255, 255, 0.1);
@@ -70,7 +73,12 @@
 
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-        let canvasWidth, canvasHeight;
+        
+        // ล็อคขนาดพื้นที่เกมให้เท่ากันทุกคน (เช่น ระดับ HD)
+        const canvasWidth = 1280;
+        const canvasHeight = 720;
+        canvas.width = canvasWidth;
+        canvas.height = canvasHeight;
 
         // ข้อมูลตัวละครและขยะ
         const characterIcons = ['👶', '👧', '👦', '🧑', '👨', '👩', '🦸‍♂️', '🦸‍♀️', '🧙‍♂️', '🤖', '👽', '👻'];
@@ -82,15 +90,6 @@
         ];
 
         // --- ระบบจอและควบคุม ---
-        function resizeCanvas() {
-            canvasWidth = window.innerWidth;
-            canvasHeight = window.innerHeight;
-            canvas.width = canvasWidth;
-            canvas.height = canvasHeight;
-        }
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
-
         const keys = { w: false, a: false, s: false, d: false, ArrowUp: false, ArrowLeft: false, ArrowDown: false, ArrowRight: false };
         let targetX = null, targetY = null;
         const playerSpeed = 6;
@@ -99,11 +98,29 @@
         window.addEventListener('keydown', (e) => { if(isGameRunning && keys.hasOwnProperty(e.key)) keys[e.key] = true; targetX = null; targetY = null; });
         window.addEventListener('keyup', (e) => { if(isGameRunning && keys.hasOwnProperty(e.key)) keys[e.key] = false; });
         
+        // ฟังก์ชันแปลงพิกัดหน้าจอ ให้เป็นพิกัดจริงในเกม
+        function getGameCoordinates(e) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            return {
+                x: (e.clientX - rect.left) * scaleX,
+                y: (e.clientY - rect.top) * scaleY
+            };
+        }
+
         canvas.addEventListener('pointerdown', (e) => { 
-            if(isGameRunning) { isPointerDown = true; targetX = e.clientX; targetY = e.clientY; }
+            if(isGameRunning) { 
+                isPointerDown = true; 
+                const pos = getGameCoordinates(e);
+                targetX = pos.x; targetY = pos.y; 
+            }
         });
         canvas.addEventListener('pointermove', (e) => { 
-            if(isGameRunning && isPointerDown) { targetX = e.clientX; targetY = e.clientY; }
+            if(isGameRunning && isPointerDown) { 
+                const pos = getGameCoordinates(e);
+                targetX = pos.x; targetY = pos.y; 
+            }
         });
         window.addEventListener('pointerup', () => { isPointerDown = false; });
         window.addEventListener('pointercancel', () => { isPointerDown = false; });
