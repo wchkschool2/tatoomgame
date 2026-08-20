@@ -59,7 +59,7 @@
 
     <script>
         // --- ตัวแปรระบบ ---
-        let supabase = null;
+        let supabaseClient = null;
         let gameChannel = null;
         
         let isGameRunning = false;
@@ -104,11 +104,11 @@
         // --- ระบบ Supabase Realtime (หัวใจสำคัญ) ---
         async function setupSupabase(url, key) {
             try {
-                // สร้างการเชื่อมต่อ
-                supabase = window.supabase.createClient(url, key);
+                // สร้างการเชื่อมต่อ (เปลี่ยนชื่อตัวแปรเป็น supabaseClient เพื่อไม่ให้ซ้ำ)
+                supabaseClient = window.supabase.createClient(url, key);
                 
                 // สร้างห้องสนทนา (Channel) ชื่อ 'game-room'
-                gameChannel = supabase.channel('game-room', {
+                gameChannel = supabaseClient.channel('game-room', {
                     config: { broadcast: { self: false } } // ไม่ต้องรับข้อความของตัวเอง
                 });
 
